@@ -1,4 +1,4 @@
-# Optimization (webpack文档翻译) （待补完）
+# Optimization (webpack文档翻译)
 从webpack4开始，webpack会根据你的`mode`选项来决定运行哪些优化项，但是所有的优化项仍然可以手动配置及覆盖。
 
 ## `optimization.minimize`
@@ -258,7 +258,7 @@ module.exports = {
 
 `bool`
 
-该配置项会使webpack确认当前标记的chunk是另外一个chunk的子集并且已经加载完成时，当前标记的chunk将不会再次加载（包含关系）。默认并且仅允许`production`mode使用。
+该配置项会使webpack确认当前标记的chunk是另外一个chunk的子集并且已经加载完成时，当前标记的chunk将不会再次加载（包含关系）。默认并且仅允许生产环境使用。
 
 **webpack.config.js**
 
@@ -275,3 +275,118 @@ module.exports = {
 
 `bool`
 
+使webpack可以按照顺序排列模块，从而可以得到最小的初始包。生产环境默认为true，其他环境下为false。
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    occurrenceOrder: false
+  }
+};
+```
+
+## `optimization.providedExports`
+
+`bool`
+
+使webpack可以高效的导出来自`export * from ...`的代码。默认开启。
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    providedExports: false
+  }
+};
+```
+
+## `optimization.usedExports`
+
+`bool`
+
+使webpack确定每个模块导出项（exports）的使用情况。依赖于`optimization.providedExports`的配置。`optimization.usedExports`收集到的信息会被其他优化项或产出代码使用到（模块未用到的导出项不会被导出，在语法完全兼容的情况下会把导出名称混淆为单个char）。为了最小化代码体积，未用到的的导出项目（exports）会被删除。生产环境默认开启。
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    usedExports: true
+  }
+};
+```
+
+## `optimization.concatenateModules`
+
+`bool`
+
+使webpack可以把代码片段安全的合并为一个模块。依赖于`optimization.providedExports`和`optimization.usedExports`。生产环境默认开启。
+
+**webpack.comfig.js**
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    concatenateModules: true
+  }
+};
+```
+
+## `optimization.sideEffects`
+
+`bool`
+
+使webpack可以识别`package.json`中的`sideEffects`项。可以删除多余的导出项（如`import {a} from 'module'`，只会打包`'module/lib/a'`，而不会把整个'module'打包进去）。
+
+**package.json**
+
+```json
+{
+  "name": "awesome npm module",
+  "version": "1.0.0",
+  "sideEffects": false
+}
+```
+
+> 注意，`sideEffects`应该在`package.json`中，但并不意味着你需要在你的项目中把它设置为false（可能你的项目会需要用到某一个大的依赖）。
+
+`optimization.sideEffects`依赖于`optimization.providedExports`。这会产生额外的构建时间，但是总体来说还是有更好的表现，因为代码量会大大减少。该优化项的优化效果取决于你的项目的第三方依赖情况。
+
+生产环境默认开启。
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    sideEffects: true
+  }
+};
+```
+
+## `optimization.portableRecords`
+
+`bool`
+
+该优化项会使webpack生成依赖项的相对路径。
+
+默认关闭。如果[recordsPath](https://webpack.js.org/configuration/other-options/#recordspath)，[recordsInputPath](https://webpack.js.org/configuration/other-options/#recordsinputpath)，[recordsOutputPath](https://webpack.js.org/configuration/other-options/#recordsoutputpath)中至少一项被配置，则开启。
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    portableRecords: true
+  }
+};
+```
